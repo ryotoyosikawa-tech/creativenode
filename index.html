@@ -3,442 +3,526 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Creative Node | 伝わる形をつくる</title>
-    <meta name="description" content="Creative Nodeは、自社メディアの企画・運営を行いながら、動画制作・サイト制作を手がけるクリエイティブ事業です。">
+    <title>Creative Node | 伝わる形を、つくる。</title>
+    <meta name="description" content="Creative Nodeは、自社メディアの企画・運営を行いながら、Webサイト・3Dウェブサイト・EC・アプリの制作を手がけるクリエイティブ事業です。">
+    <meta property="og:title" content="Creative Node | 伝わる形を、つくる。">
+    <meta property="og:description" content="メディア運営で培った企画力、発信力、導線設計の視点を活かし、見た目だけで終わらない、伝わるクリエイティブを制作しています。">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.creativenode.jp/">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <script>
+        document.documentElement.classList.add('js');
+        // JS/CDNが読み込めない場合は通常表示にフォールバック
+        window.__cnFallback = setTimeout(function () {
+            document.documentElement.classList.remove('js');
+        }, 3500);
+    </script>
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Space+Grotesk:wght@400;500&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
     <!-- CSS -->
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+    <!-- Grain -->
+    <div class="noise" aria-hidden="true"></div>
+
+    <!-- Custom cursor -->
+    <div class="cursor" aria-hidden="true">
+        <div class="cursor-dot"></div>
+        <div class="cursor-ring"></div>
+    </div>
+
+    <!-- Preloader -->
+    <div class="preloader" id="preloader" aria-hidden="true">
+        <div class="preloader-inner">
+            <span class="preloader-logo">Creative&nbsp;Node</span>
+            <span class="preloader-count"><span id="preloader-count">0</span>%</span>
+        </div>
+    </div>
+
+    <!-- オープニング演出の日本語キャプション -->
+    <div class="intro-caption" id="intro-caption" aria-hidden="true"></div>
+
+    <!-- WebGL canvas (fixed, behind everything) -->
+    <canvas id="webgl" class="webgl" aria-hidden="true"></canvas>
+    <!-- 本文の可読性確保用ベール（スクロール連動で濃淡が変わる） -->
+    <div class="gl-veil" id="gl-veil" aria-hidden="true"></div>
+
     <!-- Header -->
     <header class="header" id="header">
-        <div class="header-inner container p-0">
-            <a href="#" class="logo">
-                <img src="images/logo.png" alt="Creative Node" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" class="logo-img">
-                <span class="logo-text" style="display:none;">Creative Node</span>
-            </a>
-            
-            <nav class="nav-desktop">
-                <ul class="nav-list">
-                    <li><a href="#about" class="nav-link">About</a></li>
-                    <li><a href="#services" class="nav-link">Services</a></li>
-                    <li><a href="#pricing" class="nav-link">Pricing</a></li>
-                    <li><a href="#projects" class="nav-link">Projects</a></li>
-                    <li><a href="#contact" class="btn btn-sm btn-primary">お問い合わせ</a></li>
-                </ul>
-            </nav>
+        <a href="#hero" class="logo" data-cursor>
+            Creative<em>Node</em>
+        </a>
 
-            <button class="menu-toggle" id="menu-toggle" aria-label="メニューを開く">
-                <span></span>
+        <nav class="nav-desktop" aria-label="メインナビゲーション">
+            <ul class="nav-list">
+                <li><a href="#about" class="nav-link" data-cursor><span>About</span></a></li>
+                <li><a href="#services" class="nav-link" data-cursor><span>Services</span></a></li>
+                <li><a href="#pricing" class="nav-link" data-cursor><span>Pricing</span></a></li>
+                <li><a href="#projects" class="nav-link" data-cursor><span>Projects</span></a></li>
+                <li><a href="#contact" class="nav-contact" data-magnetic data-cursor>お問い合わせ</a></li>
+            </ul>
+        </nav>
+
+        <div class="header-actions">
+            <button class="sound-toggle" id="sound-toggle" aria-label="サウンドをオンにする" aria-pressed="false" data-cursor>
+                <span class="sound-bar"></span>
+                <span class="sound-bar"></span>
+                <span class="sound-bar"></span>
+                <span class="sound-bar"></span>
+            </button>
+            <button class="menu-toggle" id="menu-toggle" aria-label="メニューを開く" aria-expanded="false" data-cursor>
                 <span></span>
                 <span></span>
             </button>
         </div>
-        
-        <!-- Mobile Menu -->
-        <nav class="nav-mobile" id="nav-mobile">
-            <ul class="nav-mobile-list">
-                <li><a href="#about" class="mobile-nav-link">About</a></li>
-                <li><a href="#services" class="mobile-nav-link">Services</a></li>
-                <li><a href="#pricing" class="mobile-nav-link">Pricing</a></li>
-                <li><a href="#projects" class="mobile-nav-link">Projects</a></li>
-                <li><a href="#contact" class="btn btn-primary btn-block mobile-nav-link text-center">お問い合わせ</a></li>
+    </header>
+    <div class="scroll-progress" id="scroll-progress" aria-hidden="true"></div>
+
+    <!-- Fullscreen menu -->
+    <div class="menu-overlay" id="menu-overlay" aria-hidden="true">
+        <nav class="menu-nav" aria-label="モバイルナビゲーション">
+            <ul class="menu-list">
+                <li class="menu-item"><a href="#about" class="menu-link" data-cursor><span class="menu-num">01</span>About</a></li>
+                <li class="menu-item"><a href="#services" class="menu-link" data-cursor><span class="menu-num">02</span>Services</a></li>
+                <li class="menu-item"><a href="#pricing" class="menu-link" data-cursor><span class="menu-num">03</span>Pricing</a></li>
+                <li class="menu-item"><a href="#projects" class="menu-link" data-cursor><span class="menu-num">04</span>Projects</a></li>
+                <li class="menu-item"><a href="#contact" class="menu-link" data-cursor><span class="menu-num">05</span>Contact</a></li>
             </ul>
         </nav>
-    </header>
+        <div class="menu-footer">
+            <a href="mailto:creativenode.info@gmail.com" class="menu-mail" data-cursor>creativenode.info@gmail.com</a>
+        </div>
+    </div>
 
     <main>
-        <!-- Hero Section -->
+        <!-- ============ HERO ============ -->
         <section class="hero" id="hero">
-            <div class="hero-container container">
-                <div class="hero-content">
-                    <span class="hero-subtitle fade-up">Creative Node</span>
-                    <h1 class="hero-title fade-up delay-1">伝わる形を<br class="sp-only">つくる</h1>
-                    <p class="hero-lead fade-up delay-2">
-                        自社メディアの企画・運営を行いながら、<br class="pc-only">動画制作・サイト制作を手がける<br class="sp-only">クリエイティブ事業です。
-                    </p>
-                    <p class="hero-description fade-up delay-3">
-                        メディア運営で培った企画力、発信力、導線設計の視点を活かし、見た目だけで終わらない、伝わるクリエイティブを制作しています。
-                    </p>
-                    <div class="hero-action fade-up delay-4">
-                        <a href="#contact" class="btn btn-primary btn-lg">お問い合わせする</a>
-                    </div>
-                </div>
-                <!-- ビジュアル部分はCSSでスタイリッシュに実装するか、実際の画像を配置 -->
-                <div class="hero-visual fade-in delay-2">
-                    <div class="visual-wrapper">
-                        <!-- Abstract/Clean workspace image (Placeholder via styling/Unsplash or placeholder image) -->
-                        <div class="visual-image"></div>
-                        <!-- 装飾シェイプ -->
-                        <div class="shape shape-circle"></div>
-                        <div class="shape shape-dots"></div>
-                    </div>
+            <div class="hero-inner container">
+                <p class="hero-label" data-reveal>Creative Studio — Based in Shiga, Japan</p>
+                <h1 class="hero-title">
+                    <span class="split-line"><span class="split-target">伝わる形を、</span></span>
+                    <span class="split-line"><span class="split-target">つくる。</span></span>
+                </h1>
+                <p class="hero-lead" data-reveal>
+                    自社メディアの企画・運営を行いながら、<br class="pc-only">Webサイト・EC・アプリの制作を手がける<br class="sp-only">クリエイティブ事業です。
+                </p>
+                <div class="hero-cta" data-reveal>
+                    <a href="#contact" class="btn-main" data-magnetic data-cursor>
+                        お問い合わせする
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+                    </a>
                 </div>
             </div>
-            <!-- scroll indicator -->
-            <div class="scroll-down">
-                <a href="#about">
-                    <span class="scroll-text">Scroll</span>
-                    <span class="scroll-line"></span>
-                </a>
+
+            <div class="hero-outline" aria-hidden="true">
+                <span id="hero-outline-text">CREATIVE&nbsp;NODE</span>
+            </div>
+
+            <div class="scroll-indicator" aria-hidden="true">
+                <span class="scroll-text">Scroll</span>
+                <span class="scroll-line"></span>
             </div>
         </section>
 
-        <!-- About Section -->
+        <!-- ============ MARQUEE ============ -->
+        <div class="marquee" aria-hidden="true">
+            <div class="marquee-track">
+                <span class="marquee-content">Web&nbsp;Design&nbsp;<i>✦</i>&nbsp;3D&nbsp;Website&nbsp;<i>✦</i>&nbsp;E-Commerce&nbsp;<i>✦</i>&nbsp;App&nbsp;Development&nbsp;<i>✦</i>&nbsp;</span>
+                <span class="marquee-content">Web&nbsp;Design&nbsp;<i>✦</i>&nbsp;3D&nbsp;Website&nbsp;<i>✦</i>&nbsp;E-Commerce&nbsp;<i>✦</i>&nbsp;App&nbsp;Development&nbsp;<i>✦</i>&nbsp;</span>
+            </div>
+        </div>
+
+        <!-- ============ ABOUT ============ -->
         <section class="about section" id="about">
-            <div class="container container-sm">
-                <div class="section-header text-center reveal">
-                    <span class="section-en">ABOUT</span>
-                    <h2 class="section-title">Creative Nodeについて</h2>
+            <div class="container">
+                <div class="section-head" data-reveal>
+                    <span class="section-num">01</span>
+                    <span class="section-en">About</span>
                 </div>
-                
-                <div class="about-content reveal">
-                    <p class="about-text">
-                        Creative Nodeは、自社メディアの企画・運営を行いながら、動画制作・サイト制作を手がけるクリエイティブ事業です。
-                    </p>
-                    <p class="about-text mt-md">
-                        メディア運営で培った企画力、発信力、導線設計の視点を活かし、見た目だけで終わらない、伝わるクリエイティブを制作しています。ブランドの世界観づくりから、集客や発信の土台となる動画・Webサイトまで、一貫した視点でサポートします。
-                    </p>
+                <h2 class="section-title" data-reveal>Creative Nodeについて</h2>
 
-                    <div class="about-features mt-lg fade-in delay-2">
-                        <div class="feature-card">
-                            <div class="feature-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
-                            <h3 class="feature-title">企画力</h3>
-                            <p class="feature-desc">魅力を見つけ、育てる視点</p>
-                        </div>
-                        <div class="feature-card">
-                            <div class="feature-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></div>
-                            <h3 class="feature-title">発信力</h3>
-                            <p class="feature-desc">興味を引き、巻き込む表現</p>
-                        </div>
-                        <div class="feature-card">
-                            <div class="feature-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/><polyline points="15 18 21 12 15 6"/></svg></div>
-                            <h3 class="feature-title">導線設計</h3>
-                            <p class="feature-desc">迷わず行動につながる道しるべ</p>
-                        </div>
+                <div class="about-grid">
+                    <div class="about-copy">
+                        <p class="about-catch" data-reveal>
+                            人と人のあいだから、<br>クリエイティブを生み出す。
+                        </p>
+                    </div>
+                    <div class="about-text-wrap">
+                        <p class="about-text" data-reveal>
+                            社名の「Node（ノード）」は、点と点が結ばれる“結び目”のこと。私たちとお客様、人と人とのつながりのあいだからクリエイティブを生み出し、世の中にポジティブな影響を広げていく。Creative Nodeには、そんな想いを込めています。
+                        </p>
+                        <p class="about-text" data-reveal>
+                            自社メディアの企画・運営を行いながら、Webサイト・EC・アプリの制作を手がけるクリエイティブ事業として、メディア運営で培った企画力、発信力、導線設計の視点を活かし、見た目だけで終わらない、伝わるクリエイティブを制作しています。ブランドの世界観づくりから、集客や発信の土台となるWebサイト・アプリまで、一貫した視点でサポートします。
+                        </p>
                     </div>
                 </div>
+
+                <ul class="feature-list">
+                    <li class="feature-row" data-reveal data-cursor>
+                        <span class="feature-num">01</span>
+                        <h3 class="feature-title">企画力</h3>
+                        <p class="feature-desc">魅力を見つけ、育てる視点</p>
+                        <span class="feature-arrow" aria-hidden="true">→</span>
+                    </li>
+                    <li class="feature-row" data-reveal data-cursor>
+                        <span class="feature-num">02</span>
+                        <h3 class="feature-title">発信力</h3>
+                        <p class="feature-desc">興味を引き、巻き込む表現</p>
+                        <span class="feature-arrow" aria-hidden="true">→</span>
+                    </li>
+                    <li class="feature-row" data-reveal data-cursor>
+                        <span class="feature-num">03</span>
+                        <h3 class="feature-title">導線設計</h3>
+                        <p class="feature-desc">迷わず行動につながる道しるべ</p>
+                        <span class="feature-arrow" aria-hidden="true">→</span>
+                    </li>
+                </ul>
             </div>
         </section>
 
-        <!-- Services Section -->
-        <section class="services section bg-light" id="services">
+        <!-- ============ SERVICES ============ -->
+        <section class="services section" id="services">
             <div class="container">
-                <div class="section-header text-center reveal">
-                    <span class="section-en">SERVICES</span>
-                    <h2 class="section-title">事業内容</h2>
-                    <p class="section-desc">
-                        Creative Nodeでは、動画制作とサイト制作を通じて、事業やブランドの魅力が伝わる発信の土台をつくります。<br class="pc-only">
-                        見た目だけでなく、何をどう見せるかまで整理しながら、目的に合ったクリエイティブをご提案します。
-                    </p>
+                <div class="section-head" data-reveal>
+                    <span class="section-num">02</span>
+                    <span class="section-en">Services</span>
                 </div>
+                <h2 class="section-title" data-reveal>事業内容</h2>
+                <p class="section-desc" data-reveal>
+                    Creative Nodeでは、Webサイト・EC・アプリの制作を通じて、事業やブランドの魅力が伝わる土台をつくります。<br class="pc-only">
+                    見た目だけでなく、何をどう見せるかまで整理しながら、目的に合ったクリエイティブをご提案します。
+                </p>
 
                 <div class="services-grid">
-                    <!-- Service 1: Video -->
-                    <div class="service-card reveal">
-                        <div class="card-inner">
-                            <div class="service-header border-bottom">
-                                <span class="service-en">Video Production</span>
-                                <h3 class="service-name">動画制作</h3>
-                                <div class="service-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg></div>
-                            </div>
-                            <div class="service-body">
-                                <h4 class="service-catch">伝えたい魅力を、短く強く届ける。</h4>
-                                <p class="service-text">
-                                    TikTok・Instagramリール・YouTubeショートを中心に、ブランドやサービスの魅力が伝わる短尺動画を制作します。<br>
-                                    世界観を大切にした表現から、商品訴求・集客を意識した構成まで、目的に合わせて設計します。<br>
-                                    広告用途のショート動画にも対応しています。
-                                </p>
-                                <ul class="check-list mt-md">
-                                    <li>SNSショート動画制作</li>
-                                    <li>商品紹介動画</li>
-                                    <li>広告ショート動画</li>
-                                    <li>ブランドイメージ動画</li>
-                                </ul>
+                    <!-- Service 1: Web -->
+                    <article class="service-card" data-reveal data-tilt>
+                        <div class="service-top">
+                            <span class="service-en">Web Production</span>
+                            <div class="service-icon" aria-hidden="true">
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
                             </div>
                         </div>
-                    </div>
+                        <h3 class="service-name">ホームページ制作</h3>
+                        <h4 class="service-catch">事業の顔を、戦略から整える。</h4>
+                        <p class="service-text">
+                            コーポレートサイトやサービスサイトを、構成設計から公開まで一貫して制作します。メディア運営で培った導線設計の視点を活かし、見た目だけでなく「伝わって、行動につながる」サイトを形にします。
+                        </p>
+                        <ul class="check-list">
+                            <li>コーポレートサイト</li>
+                            <li>ランディングページ</li>
+                            <li>採用・サービスサイト</li>
+                            <li>スマホ対応・フォーム実装</li>
+                        </ul>
+                    </article>
 
-                    <!-- Service 2: Web -->
-                    <div class="service-card reveal delay-1">
-                        <div class="card-inner">
-                            <div class="service-header border-bottom">
-                                <span class="service-en">Website Production</span>
-                                <h3 class="service-name">サイト制作</h3>
-                                <div class="service-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg></div>
-                            </div>
-                            <div class="service-body">
-                                <h4 class="service-catch">事業の顔となるサイトを、低コストで整える。</h4>
-                                <p class="service-text">
-                                    会社概要、企業理念、事業内容・サービス概要、取扱い商品、個人情報保護方針、ニュース、お問い合わせフォームなど、名刺代わりに必要な基本情報をまとめた小規模サイトを制作します。<br>
-                                    テンプレートとAIを活用し、必要な情報を整理したうえで、シンプルで見やすいサイトを形にします。
-                                </p>
-                                <ul class="check-list mt-md">
-                                    <li>名刺代わりサイト制作</li>
-                                    <li>最大5ページ程度まで対応</li>
-                                    <li>スマホ対応</li>
-                                    <li>お問い合わせフォーム対応</li>
-                                </ul>
+                    <!-- Service 2: 3D Website -->
+                    <article class="service-card" data-reveal data-tilt>
+                        <div class="service-top">
+                            <span class="service-en">3D / WebGL</span>
+                            <div class="service-icon" aria-hidden="true">
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
                             </div>
                         </div>
-                    </div>
+                        <h3 class="service-name">3Dウェブサイト制作</h3>
+                        <h4 class="service-catch">世界観ごと、体験として伝える。</h4>
+                        <p class="service-text">
+                            WebGLによる3D表現とスクロール演出で、ブランドの世界観を「体験」として届ける特別なサイトを制作します。今ご覧いただいているこのサイトも、自社で企画・制作したものです。
+                        </p>
+                        <ul class="check-list">
+                            <li>WebGL・3D演出</li>
+                            <li>スクロール連動アニメーション</li>
+                            <li>ブランドサイト・キャンペーンサイト</li>
+                            <li>没入感のあるビジュアル表現</li>
+                        </ul>
+                    </article>
+
+                    <!-- Service 3: EC -->
+                    <article class="service-card" data-reveal data-tilt>
+                        <div class="service-top">
+                            <span class="service-en">E-Commerce</span>
+                            <div class="service-icon" aria-hidden="true">
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                            </div>
+                        </div>
+                        <h3 class="service-name">EC構築（Shopify）</h3>
+                        <h4 class="service-catch">売れる仕組みを、Shopifyで。</h4>
+                        <p class="service-text">
+                            Shopifyを使ったオンラインストアの立ち上げを、ストア設計からテーマ構築、決済・配送の初期設定まで対応します。ブランドの世界観と買いやすさを両立したストアをつくります。
+                        </p>
+                        <ul class="check-list">
+                            <li>Shopifyストア構築</li>
+                            <li>テーマカスタマイズ</li>
+                            <li>決済・配送の初期設定</li>
+                            <li>運用を見据えた設計</li>
+                        </ul>
+                    </article>
+
+                    <!-- Service 4: App -->
+                    <article class="service-card" data-reveal data-tilt>
+                        <div class="service-top">
+                            <span class="service-en">App Development</span>
+                            <div class="service-icon" aria-hidden="true">
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
+                            </div>
+                        </div>
+                        <h3 class="service-name">アプリ開発</h3>
+                        <h4 class="service-catch">アイデアを、動くかたちに。</h4>
+                        <p class="service-text">
+                            業務の効率化ツールから新しいサービスの立ち上げまで、目的に合わせてWebアプリを設計・開発します。小さく作って育てる進め方にも対応し、運用しながらの改善まで伴走します。
+                        </p>
+                        <ul class="check-list">
+                            <li>業務効率化ツール</li>
+                            <li>Webアプリ開発</li>
+                            <li>プロトタイプ開発</li>
+                            <li>保守・改善の伴走</li>
+                        </ul>
+                    </article>
                 </div>
             </div>
         </section>
 
-        <!-- Pricing Section -->
+        <!-- ============ PRICING ============ -->
         <section class="pricing section" id="pricing">
             <div class="container">
-                <div class="section-header text-center reveal">
-                    <span class="section-en">PRICING</span>
-                    <h2 class="section-title">価格・プラン</h2>
-                    <p class="section-desc">
-                        現在、実績づくりのため相談しやすい初期価格でご案内しています。<br class="pc-only">
-                        まずは小さく始めたい方にもご依頼いただきやすい内容です。
-                    </p>
+                <div class="section-head" data-reveal>
+                    <span class="section-num">03</span>
+                    <span class="section-en">Pricing</span>
                 </div>
+                <h2 class="section-title" data-reveal>価格・プラン</h2>
+                <p class="section-desc" data-reveal>
+                    内容と規模に合わせたご提案をいたします。記載は開始価格の目安です。<br class="pc-only">
+                    お見積もりは無料ですので、まずはお気軽にご相談ください。
+                </p>
 
-                <div class="pricing-grid">
-                    <!-- Pricing: Video -->
-                    <div class="pricing-card reveal">
-                        <div class="pricing-header">
-                            <h3 class="pricing-title">ショート動画制作</h3>
+                <ul class="price-menu">
+                    <li class="price-row" data-reveal data-cursor>
+                        <span class="price-index">01</span>
+                        <div class="price-row-main">
+                            <h3 class="price-row-name">ホームページ制作</h3>
+                            <p class="price-row-desc">コーポレートサイト・LP・サービスサイト。構成設計から公開まで。</p>
                         </div>
-                        <div class="pricing-body">
-                            <ul class="price-list">
-                                <li>
-                                    <span class="qty">1本</span>
-                                    <span class="price-val">2,500<small>円</small></span>
-                                </li>
-                                <li>
-                                    <span class="qty">4本セット</span>
-                                    <span class="price-val">9,000<small>円</small></span>
-                                </li>
-                                <li>
-                                    <span class="qty">8本セット</span>
-                                    <span class="price-val">16,000<small>円</small></span>
-                                </li>
-                            </ul>
-                            <div class="pricing-notes">
-                                <ul class="dot-list">
-                                    <li>TikTok / Instagramリール / YouTubeショート向け</li>
-                                    <li>30〜45秒程度までの短尺動画</li>
-                                    <li>素材支給を基本とします</li>
-                                    <li>修正は軽微な内容1回まで</li>
-                                    <li>広告用途のショート動画にも対応可能</li>
-                                </ul>
-                            </div>
+                        <div class="price-row-val">
+                            <span class="price-yen">¥</span><span class="price-row-num" data-counter="150000">150,000</span><span class="price-tilde">〜</span>
                         </div>
-                    </div>
+                    </li>
+                    <li class="price-row" data-reveal data-cursor>
+                        <span class="price-index">02</span>
+                        <div class="price-row-main">
+                            <h3 class="price-row-name">3Dウェブサイト制作</h3>
+                            <p class="price-row-desc">WebGL・3D演出で世界観ごと伝える特別なサイト。このサイトがその実例です。</p>
+                        </div>
+                        <div class="price-row-val">
+                            <span class="price-yen">¥</span><span class="price-row-num" data-counter="300000">300,000</span><span class="price-tilde">〜</span>
+                        </div>
+                    </li>
+                    <li class="price-row" data-reveal data-cursor>
+                        <span class="price-index">03</span>
+                        <div class="price-row-main">
+                            <h3 class="price-row-name">EC構築（Shopify）</h3>
+                            <p class="price-row-desc">ストア設計・テーマ構築・決済/配送の初期設定まで。</p>
+                        </div>
+                        <div class="price-row-val">
+                            <span class="price-yen">¥</span><span class="price-row-num" data-counter="300000">300,000</span><span class="price-tilde">〜</span>
+                        </div>
+                    </li>
+                    <li class="price-row" data-reveal data-cursor>
+                        <span class="price-index">04</span>
+                        <div class="price-row-main">
+                            <h3 class="price-row-name">フルオーダー制作</h3>
+                            <p class="price-row-desc">テンプレートを使わない完全自社制作。設計・デザイン・実装まで一貫対応。</p>
+                        </div>
+                        <div class="price-row-val">
+                            <span class="price-yen">¥</span><span class="price-row-num" data-counter="500000">500,000</span><span class="price-tilde">〜</span>
+                        </div>
+                    </li>
+                    <li class="price-row" data-reveal data-cursor>
+                        <span class="price-index">05</span>
+                        <div class="price-row-main">
+                            <h3 class="price-row-name">アプリ開発</h3>
+                            <p class="price-row-desc">業務効率化ツールからサービス開発まで。要件に合わせて設計・開発。</p>
+                        </div>
+                        <div class="price-row-val">
+                            <span class="price-yen">¥</span><span class="price-row-num" data-counter="800000">800,000</span><span class="price-tilde">〜</span>
+                        </div>
+                    </li>
+                </ul>
 
-                    <!-- Pricing: Web -->
-                    <div class="pricing-card card-featured reveal delay-1">
-                        <div class="pricing-header">
-                            <span class="badge">10名限定モニター</span>
-                            <h3 class="pricing-title">名刺代わりサイト制作<br><span class="title-sub">（最大5ページ）</span></h3>
-                        </div>
-                        <div class="pricing-body text-center">
-                            <div class="price-main">
-                                <span class="price-num">5,000</span>
-                                <span class="price-unit">円<small>（税込）</small></span>
-                            </div>
-                            <div class="price-note-alert">
-                                ※一般的な小規模サイト制作と比べて、相談しやすいモニター価格です<br>
-                                <small>相場目安：10万〜50万円前後</small>
-                            </div>
-                            
-                            <p class="pricing-text text-left mt-md">
-                                会社概要、企業理念、事業内容・サービス概要、取扱い商品、個人情報保護方針、ニュース、お問い合わせフォームなど、名刺代わりに必要な基本情報をまとめた小規模サイトを制作します。<br>
-                                テンプレートとAIを活用し、必要な情報を整理したうえで、シンプルで見やすいサイトを形にします。<br>
-                                <strong class="color-primary">実績掲載にご協力いただける【先着10名様】限定の特別価格です。</strong>
-                            </p>
-                            
-                            <div class="pricing-included text-left mt-lg">
-                                <h4 class="included-title">含まれる内容</h4>
-                                <ul class="check-list-sm">
-                                    <li>最大5ページ程度まで</li>
-                                    <li>スマホ対応</li>
-                                    <li>お問い合わせフォーム</li>
-                                    <li>軽微修正1回まで</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Cautions and Options Box -->
-                <div class="info-box-wrap reveal">
-                    <div class="info-box bg-light">
-                        <h4 class="box-title">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-                            オプション（金額目安）
-                        </h4>
-                        <ul class="option-list">
-                            <li><span class="opt-label">予約希望フォーム追加</span><span class="opt-val">+2,000円〜3,000円</span></li>
-                            <li><span class="opt-label">外部フォーム埋め込み</span><span class="opt-val">+2,000円〜4,000円</span></li>
-                            <li><span class="opt-label">外部予約サービスの埋め込み / 初期設定</span><span class="opt-val">+5,000円〜8,000円</span></li>
-                            <li><span class="opt-label">その他の機能追加</span><span class="opt-val">内容に応じてご相談</span></li>
-                        </ul>
-                        <div class="note-muted mt-sm">※上記はあくまで目安です。</div>
-                    </div>
-
-                    <div class="info-box border-box mt-md">
-                        <h4 class="box-title">ご確認事項</h4>
-                        <ul class="dot-list">
-                            <li>原稿・画像は基本支給をお願いいたします。</li>
-                            <li>大幅な構成変更やデザイン変更は対象外です。</li>
-                            <li>機能追加は内容に応じて別途ご相談となります。</li>
-                            <li>サーバー / ドメイン契約は別途ご相談となります。</li>
-                            <li>有料ツール・外部サービスの利用料が発生する場合は、お客様側でのご契約・ご負担をお願いいたします。</li>
-                        </ul>
-                    </div>
+                <div class="info-box pricing-note" data-reveal>
+                    <h4 class="box-title">ご確認事項</h4>
+                    <ul class="dot-list">
+                        <li>記載の価格は開始価格の目安です。内容・規模により変動します。</li>
+                        <li>お見積もりは無料です。ご予算に合わせたご提案も可能です。</li>
+                        <li>サーバー / ドメイン契約、有料ツール・外部サービスの利用料は別途となります。</li>
+                    </ul>
                 </div>
             </div>
         </section>
 
-        <!-- Projects Section -->
-        <section class="projects section bg-bg" id="projects">
+        <!-- ============ PROJECTS ============ -->
+        <section class="projects section" id="projects">
             <div class="container">
-                <div class="section-header text-center reveal">
-                    <span class="section-en">PROJECTS</span>
-                    <h2 class="section-title">運営メディア / プロジェクト</h2>
-                    <p class="section-desc">
-                        Creative Nodeでは、受託制作だけでなく、自社メディアの企画・運営も行っています。<br class="pc-only">
-                        実際にメディアを育てる中で、企画、発信、導線設計の視点を磨き、制作にも活かしています。
-                    </p>
+                <div class="section-head" data-reveal>
+                    <span class="section-num">04</span>
+                    <span class="section-en">Projects</span>
                 </div>
+                <h2 class="section-title" data-reveal>運営メディア / プロジェクト</h2>
+                <p class="section-desc" data-reveal>
+                    Creative Nodeでは、受託制作だけでなく、自社メディアの企画・運営も行っています。<br class="pc-only">
+                    実際にメディアを育てる中で、企画、発信、導線設計の視点を磨き、制作にも活かしています。
+                </p>
 
-                <div class="projects-content reveal">
-                    <div class="project-card-horizontal">
-                        <div class="project-visual">
-                            <div class="visual-placeholder">
-                                <span class="visual-text">KAORI LABO</span>
-                            </div>
-                        </div>
-                        <div class="project-info">
-                            <span class="badge-sub">自社メディア</span>
-                            <h3 class="project-name">KAORI LABO</h3>
-                            <p class="project-desc">
-                                香りをテーマにした自社メディア。<br>
-                                記事設計、導線づくり、世界観設計まで一貫して運営しています。
-                            </p>
+                <div class="project-card" data-reveal data-cursor>
+                    <div class="project-visual">
+                        <div class="project-visual-inner">
+                            <span class="project-visual-text">KAORI<br>LABO</span>
+                            <span class="project-orb orb-1" aria-hidden="true"></span>
+                            <span class="project-orb orb-2" aria-hidden="true"></span>
                         </div>
                     </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Contact Section -->
-        <section class="contact section" id="contact">
-            <div class="container container-md">
-                <div class="section-header text-center reveal">
-                    <span class="section-en">CONTACT</span>
-                    <h2 class="section-title">お問い合わせ</h2>
-                    <p class="section-desc">
-                        動画制作・サイト制作のご相談は、こちらよりお気軽にご連絡ください。<br>
-                        ご依頼前のご相談や、内容がまだ固まっていない段階でも問題ありません。<br>
-                        確認後、順次ご返信いたします。
-                    </p>
-                </div>
-
-                <div class="contact-area reveal">
-                    <div class="contact-email text-center mb-lg">
-                        <p class="mb-sm color-text-muted">メールでのお問い合わせはこちら</p>
-                        <a href="mailto:creativenode.info@gmail.com" class="email-link">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mr-sm"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-                            creativenode.info@gmail.com
+                    <div class="project-info">
+                        <span class="badge-sub">自社メディア</span>
+                        <h3 class="project-name">KAORI LABO</h3>
+                        <p class="project-desc">
+                            香りをテーマにした自社メディア。<br>
+                            記事設計、導線づくり、世界観設計まで一貫して運営しています。
+                        </p>
+                        <a href="#contact" class="project-cta" data-cursor>
+                            広告掲載のご相談はこちら
+                            <span class="project-cta-arrow" aria-hidden="true">→</span>
                         </a>
                     </div>
+                </div>
+            </div>
+        </section>
 
-                    <div class="contact-form-box">
-                        <div class="form-instruction text-center mb-lg">フォームからのお問い合わせ</div>
-                        <!-- In a real scenario, action would point to a form endpoint e.g., formrun, netlify, php script -->
-                        <form action="#" method="POST" class="form">
-                            <div class="form-row">
-                                <label for="name" class="form-label">お名前 <span class="req">必須</span></label>
-                                <input type="text" id="name" name="name" class="form-control" required placeholder="例: 山田 太郎">
-                            </div>
+        <!-- ============ INTERLUDE (particle morph) ============ -->
+        <section class="interlude" id="interlude" aria-hidden="true">
+            <div class="interlude-caption" id="interlude-caption">
+                <span class="interlude-en">Connecting the dots</span>
+                <span class="interlude-jp">人と人を、つないで形に。</span>
+            </div>
+        </section>
 
-                            <div class="form-row">
-                                <label for="email" class="form-label">メールアドレス <span class="req">必須</span></label>
-                                <input type="email" id="email" name="email" class="form-control" required placeholder="例: info@example.com">
-                            </div>
+        <!-- ============ CONTACT ============ -->
+        <section class="contact section" id="contact">
+            <div class="container container-md">
+                <div class="section-head" data-reveal>
+                    <span class="section-num">05</span>
+                    <span class="section-en">Contact</span>
+                </div>
+                <h2 class="section-title" data-reveal>お問い合わせ</h2>
+                <p class="section-desc" data-reveal>
+                    動画制作・サイト制作のご相談は、こちらよりお気軽にご連絡ください。<br>
+                    ご依頼前のご相談や、内容がまだ固まっていない段階でも問題ありません。<br>
+                    確認後、順次ご返信いたします。
+                </p>
 
-                            <div class="form-row">
-                                <label class="form-label">ご希望の内容 <span class="req">必須</span></label>
-                                <div class="form-radio-group">
-                                    <label class="radio-label"><input type="radio" name="service_type" value="動画制作" required> 動画制作</label>
-                                    <label class="radio-label"><input type="radio" name="service_type" value="サイト制作"> サイト制作</label>
-                                    <label class="radio-label"><input type="radio" name="service_type" value="その他"> 相談・その他</label>
-                                </div>
-                            </div>
-                            
-                            <div class="form-row">
-                                <label for="message" class="form-label">ご相談内容 <span class="req">必須</span></label>
-                                <p class="form-help">内容が固まっていない場合でもわかる範囲でご記入ください。項目が不明な場合は下部の「ご依頼用テンプレート」をコピペしてご活用ください。</p>
-                                <textarea id="message" name="message" class="form-control" rows="8" required placeholder="詳細をご記入ください"></textarea>
-                            </div>
+                <div class="contact-email" data-reveal>
+                    <p class="contact-email-label">メールでのお問い合わせはこちら</p>
+                    <a href="mailto:creativenode.info@gmail.com" class="email-link" data-cursor>
+                        creativenode.info@gmail.com
+                    </a>
+                </div>
 
-                            <div class="form-submit text-center mt-xl">
-                                <button type="submit" class="btn btn-primary btn-xl">送信する</button>
-                            </div>
-                        </form>
-                    </div>
+                <div class="contact-form-box" data-reveal>
+                    <p class="form-instruction">フォームからのお問い合わせ</p>
+                    <form action="#" method="POST" class="form">
+                        <div class="form-row">
+                            <label for="name" class="form-label">お名前 <span class="req">必須</span></label>
+                            <input type="text" id="name" name="name" class="form-control" required placeholder="例: 山田 太郎">
+                        </div>
 
-                    <details class="contact-template-details mt-lg">
-                        <summary class="template-summary">ご相談内容の記入に迷う場合は、「ご依頼用テンプレート」をご活用ください</summary>
-                        <div class="contact-template-box bg-light mt-sm">
-                            <h5 class="template-title">【ご依頼用テンプレート】※コピーしてご使用ください</h5>
-                            <div class="template-code" id="contact-template">
+                        <div class="form-row">
+                            <label for="email" class="form-label">メールアドレス <span class="req">必須</span></label>
+                            <input type="email" id="email" name="email" class="form-control" required placeholder="例: info@example.com">
+                        </div>
+
+                        <div class="form-row">
+                            <span class="form-label">ご希望の内容 <span class="req">必須</span></span>
+                            <div class="form-radio-group">
+                                <label class="radio-label" data-cursor><input type="radio" name="service_type" value="ホームページ制作" required><span>ホームページ制作</span></label>
+                                <label class="radio-label" data-cursor><input type="radio" name="service_type" value="3Dウェブサイト制作"><span>3Dウェブサイト</span></label>
+                                <label class="radio-label" data-cursor><input type="radio" name="service_type" value="EC構築"><span>EC構築（Shopify）</span></label>
+                                <label class="radio-label" data-cursor><input type="radio" name="service_type" value="アプリ開発"><span>アプリ開発</span></label>
+                                <label class="radio-label" data-cursor><input type="radio" name="service_type" value="広告掲載"><span>広告掲載（KAORI LABO）</span></label>
+                                <label class="radio-label" data-cursor><input type="radio" name="service_type" value="その他"><span>相談・その他</span></label>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <label for="message" class="form-label">ご相談内容 <span class="req">必須</span></label>
+                            <p class="form-help">内容が固まっていない場合でもわかる範囲でご記入ください。項目が不明な場合は下部の「ご依頼用テンプレート」をコピペしてご活用ください。</p>
+                            <textarea id="message" name="message" class="form-control" rows="8" required placeholder="詳細をご記入ください"></textarea>
+                        </div>
+
+                        <div class="form-submit">
+                            <button type="submit" class="btn-main btn-submit" data-magnetic data-cursor>
+                                送信する
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <details class="contact-template-details" data-reveal>
+                    <summary class="template-summary" data-cursor>ご相談内容の記入に迷う場合は、「ご依頼用テンプレート」をご活用ください</summary>
+                    <div class="contact-template-box">
+                        <h5 class="template-title">【ご依頼用テンプレート】※コピーしてご使用ください</h5>
+                        <div class="template-code" id="contact-template">
 お名前：
 ご連絡先：
-ご希望の内容：（動画制作 / サイト制作）
+ご希望の内容：（ホームページ / 3Dウェブサイト / EC構築 / アプリ開発 / 広告掲載）
 用途・目的：
 希望納期：
 素材の有無：
 ご予算：
 参考イメージ：
 ご相談内容：
-                            </div>
-                            <p class="template-note">上記の内容をコピーし、「ご相談内容」欄に貼り付けて不足情報を埋める形でご利用いただけます。</p>
                         </div>
-                    </details>
-                </div>
+                        <p class="template-note">上記の内容をコピーし、「ご相談内容」欄に貼り付けて不足情報を埋める形でご利用いただけます。</p>
+                    </div>
+                </details>
             </div>
         </section>
     </main>
 
-    <!-- Footer -->
+    <!-- ============ FOOTER ============ -->
     <footer class="footer">
-        <div class="container container-md">
-            <div class="footer-inner">
-                <div class="footer-info">
-                    <span class="footer-brand">Creative Node</span>
-                    <a href="mailto:creativenode.info@gmail.com" class="footer-email">creativenode.info@gmail.com</a>
-                </div>
-                
-                <div class="footer-links">
-                    <ul class="footer-nav">
-                        <li><a href="#about">About</a></li>
-                        <li><a href="#services">Services</a></li>
-                        <li><a href="#pricing">Pricing</a></li>
-                        <li><a href="#projects">Projects</a></li>
-                        <li><a href="#contact">Contact</a></li>
-                    </ul>
-                </div>
+        <div class="footer-cta">
+            <div class="container">
+                <p class="footer-cta-en" data-reveal>Let's Create Together</p>
+                <p class="footer-cta-jp" data-reveal>伝わる形を、一緒につくりませんか。</p>
+                <a href="#contact" class="btn-main btn-invert" data-magnetic data-cursor data-reveal>
+                    お問い合わせする
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+                </a>
             </div>
-            
-            <div class="footer-bottom text-center">
-                <a href="#" class="privacy-link">プライバシーポリシー</a>
-                <p class="copyright">&copy; Creative Node</p>
+        </div>
+        <div class="footer-bottom">
+            <div class="container footer-bottom-inner">
+                <span class="footer-brand">Creative<em>Node</em></span>
+                <ul class="footer-nav">
+                    <li><a href="#about" data-cursor>About</a></li>
+                    <li><a href="#services" data-cursor>Services</a></li>
+                    <li><a href="#pricing" data-cursor>Pricing</a></li>
+                    <li><a href="#projects" data-cursor>Projects</a></li>
+                    <li><a href="#contact" data-cursor>Contact</a></li>
+                </ul>
+                <div class="footer-meta">
+                    <a href="#" class="privacy-link" data-cursor>プライバシーポリシー</a>
+                    <p class="copyright">&copy; Creative Node</p>
+                </div>
             </div>
         </div>
     </footer>
 
     <!-- Scripts -->
-    <script src="js/script.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.14/dist/lenis.min.js"></script>
+    <script type="module" src="js/script.js"></script>
 </body>
 </html>
